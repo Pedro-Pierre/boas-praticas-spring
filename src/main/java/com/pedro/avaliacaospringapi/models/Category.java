@@ -12,6 +12,13 @@ import jakarta.validation.constraints.NotBlank;
 @Table(name = "TB_CATEGORIES")
 public class Category {
 
+    public Category(Long id, String description) {
+        this.id = id;
+        this.description = description;
+    }
+
+    public Category() {}
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "categorie_id")
@@ -19,7 +26,7 @@ public class Category {
 
     @Column(name = "description")
     @NotBlank(message = "O nome da categoria é obrigatório!")
-    private String name;
+    private String description;
 
     public Long getId() {
         return id;
@@ -29,11 +36,11 @@ public class Category {
         this.id = id;
     }
 
-    public String getCategory() {
-        return name;
+    public String getDescription() {
+        return description;
     }
 
-    public void setCategory(String name) {
-        this.name = name;
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

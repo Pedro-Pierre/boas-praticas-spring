@@ -18,6 +18,7 @@ import com.pedro.avaliacaospringapi.services.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -42,7 +43,7 @@ public class UserController {
 
     @PostMapping("")
     @Operation(summary = "Cadastrar um novo usuário")
-    public User addUser(@RequestBody User user) {
+    public User addUser(@RequestBody @Valid User user) {
         return userService.addUser(user);
     }
 
