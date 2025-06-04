@@ -53,7 +53,7 @@ public class CategoryController {
 
     @GetMapping("/")
     @Operation(summary = "Procurar categorias pela descrição")
-    public ResponseEntity<?> findByDescription(@RequestParam String description) {
+    public ResponseEntity<List<Category>> findByDescription(@RequestParam String description) {
         List<Category> categories = categoryService.getCategoriesByDescription(description);
         return ResponseEntity.ok(categories);
     }

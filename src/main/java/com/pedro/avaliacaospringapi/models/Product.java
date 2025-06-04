@@ -34,12 +34,6 @@ public class Product {
 
     public Product() {}
 
-    public Product(String description, Double price, Category category) {
-        this.description = description;
-        this.price = price;
-        this.category = category;
-    }
-
     public Long getId() {
         return id;
     }
