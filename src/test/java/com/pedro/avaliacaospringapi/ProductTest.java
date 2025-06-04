@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pedro.avaliacaospringapi.models.Category;
 import com.pedro.avaliacaospringapi.models.Product;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,7 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class ProductTest {
+class ProductTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -48,7 +47,7 @@ public class ProductTest {
 
     @Test
     void T001_saveProduct() throws Exception {
-        // criando a categoria primeiro
+       
         Category category = new Category();
         category.setDescription("Eletrônicos");
 
@@ -63,7 +62,6 @@ public class ProductTest {
         JsonNode categoryNode = getJson(categoryJson);
         Long categoryId = categoryNode.get("id").asLong();
 
-        // criando o produto
         Product product = new Product();
         product.setDescription("Mouse Gamer");
         product.setPrice(250.0);
@@ -86,7 +84,7 @@ public class ProductTest {
 
     @Test
     void T002_saveProduct_descriptionEmpty() throws Exception {
-        // criando a categoria primeiro
+       
         Category category = new Category();
         category.setDescription("Periféricos");
 
@@ -101,9 +99,8 @@ public class ProductTest {
         JsonNode categoryNode = getJson(categoryJson);
         Long categoryId = categoryNode.get("id").asLong();
 
-        // criando o produto inválido
         Product product = new Product();
-        product.setDescription(""); // inválido
+        product.setDescription(""); 
         product.setPrice(150.0);
         product.setCategory(new Category(categoryId, null));
 
@@ -129,7 +126,181 @@ public class ProductTest {
         Assert.assertTrue(resultJSON.isArray());
     }
 
+    @Test
+    void T004_deleteProductById() throws Exception {
+
+        Category category = new Category();
+        category.setId(1L); // ou use o ID de uma categoria válida já salva no banco
+
+        Product product = new Product();
+        product.setDescription("Notebook");
+        product.setPrice(2500.0);
+        product.setCategory(category);
+
+        String content = mapper.writeValueAsString(product);
+
+        MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders
+                .post("/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+                .andReturn();
+
+        JsonNode createdJson = getJson(createResult.getResponse().getContentAsString());
+        Long productId = createdJson.get("id").asLong();
+
+        MvcResult deleteResult = mockMvc.perform(MockMvcRequestBuilders
+                .delete("/products/" + productId))
+                .andReturn();
+
+        Assert.assertEquals(204, deleteResult.getResponse().getStatus());
+    }
+
+    @Test
+    void T005_deleteProductById_inexistente() throws Exception {
+        Long idInexistente = 9999L;
+
+        MvcResult deleteResult = mockMvc.perform(MockMvcRequestBuilders
+                .delete("/products/" + idInexistente))
+                .andReturn();
+
+        Assert.assertEquals(404, deleteResult.getResponse().getStatus());
+    }
+
+    @Test
+    void T006_findByDescription() throws Exception {
+        Category category = new Category();
+        category.setId(1L); // 
+
+        Product product = new Product();
+        product.setDescription("Notebook");
+        product.setPrice(2500.0);
+        product.setCategory(category);
+
+        String content = mapper.writeValueAsString(product);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                .post("/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+                .andReturn();
+
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                .get("/products/")
+                .param("description", "Notebook"))
+                .andReturn();
+
+        Assert.assertEquals(200, result.getResponse().getStatus());
+    }
+
+    @Test
+    void T007_findByDescription_vazio() throws Exception {
+        
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+                .get("/products/")
+                .param("description", ""))
+                .andReturn();
+
+        Assert.assertEquals(404, result.getResponse().getStatus());
+    }
+
+    @Test
+    void T008_updateProduct_sucesso() throws Exception {
+        Category category = new Category();
+        category.setId(1L); 
+        
+        Product product = new Product();
+        product.setDescription("Notebook");
+        product.setPrice(2500.0);
+        product.setCategory(category);
+
+
+        String content = mapper.writeValueAsString(product);
+
+        MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders
+                .post("/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+                .andReturn();
+
+        JsonNode createdJson = getJson(createResult.getResponse().getContentAsString());
+        Long productId = createdJson.get("id").asLong();
+
+        product.setDescription("Produto Atualizado");
+        product.setPrice(25.0);
+        String updateContent = mapper.writeValueAsString(product);
+
+        MvcResult updateResult = mockMvc.perform(MockMvcRequestBuilders
+                .put("/products/" + productId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateContent))
+                .andReturn();
+
+        Assert.assertEquals(201, updateResult.getResponse().getStatus());
+        JsonNode updatedJson = getJson(updateResult.getResponse().getContentAsString());
+        Assert.assertEquals("Produto Atualizado", updatedJson.get("description").asText());
+        assertEquals(25.0, updatedJson.get("price").asDouble());
+    }
+
+    @Test
+    void T009_updateProduct_idInexistente() throws Exception {
+        Long idInexistente = 9999L;
+
+        Product product = new Product();
+        product.setDescription("Produto Qualquer");
+        product.setPrice(30.0);
+
+        String content = mapper.writeValueAsString(product);
+
+        MvcResult updateResult = mockMvc.perform(MockMvcRequestBuilders
+                .put("/products/" + idInexistente)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content))
+                .andReturn();
+
+        Assert.assertEquals(404, updateResult.getResponse().getStatus());
+    }
+
+@Test
+    void T010_updateProduct_descricaoVazia() throws Exception {
+        // Criação de categoria válida
+        Category category = new Category();
+        category.setId(1L);
+
+        Product product = new Product();
+        product.setDescription("Notebook");
+        product.setPrice(2500.0);
+        product.setCategory(category);
+
+        String validProductJson = mapper.writeValueAsString(product);
+
+  
+        MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders
+                .post("/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(validProductJson))
+                .andReturn();
+
+        String createResponseContent = createResult.getResponse().getContentAsString();
+        Long productId = getJson(createResponseContent).get("id").asLong();
+
+        Product updatedProduct = new Product();
+        updatedProduct.setDescription(""); 
+        updatedProduct.setPrice(2500.0);
+        updatedProduct.setCategory(category);
+
+        String invalidUpdateJson = mapper.writeValueAsString(updatedProduct);
+
+        MvcResult updateResult = mockMvc.perform(MockMvcRequestBuilders
+                .put("/products/" + productId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidUpdateJson))
+                .andReturn();
+
+        Assert.assertEquals(400, updateResult.getResponse().getStatus());
+    }
+
     private JsonNode getJson(String jsonString) throws JsonProcessingException {
         return mapper.readTree(jsonString);
     }
+
 }

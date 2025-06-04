@@ -2,7 +2,7 @@ package com.pedro.avaliacaospringapi.controllers;
 
 import java.util.List;
 
-import javax.naming.NameNotFoundException;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pedro.avaliacaospringapi.config.exception.notFound.NameNotFoundException;
 import com.pedro.avaliacaospringapi.models.User;
 import com.pedro.avaliacaospringapi.services.UserService;
 
@@ -56,17 +57,17 @@ public class UserController {
 
     @GetMapping("/")
     @Operation(summary = "Procurar usuários por nome")
-    public ResponseEntity<?> findByName(@RequestParam String name) throws NameNotFoundException {
+    public ResponseEntity<List<User>> findByName(@RequestParam String name) throws NameNotFoundException {
         List<User> users = userService.getUsersByName(name);
         return ResponseEntity.ok(users);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Autalizar usuário por id")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody User user) {
     User updated = userService.updateUser(id, user);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(updated);
-}
+    }
 }
