@@ -54,7 +54,7 @@ public class ProductController {
 
     @GetMapping("/")
     @Operation(summary = "Procurar produtos por nome")
-    public ResponseEntity<?> findByDescription(@Valid @RequestParam String description) {
+    public ResponseEntity<List<Product>> findByDescription(@Valid @RequestParam String description) {
         List<Product> products = productService.getProductsByDescription(description);
         return ResponseEntity.ok(products);
     }
