@@ -33,8 +33,8 @@ public class CategoryService {
         categoryRepository.deleteById(id);
     }
 
-    public List<Category> getCategoriesByName(String name) {
-        List<Category> categories = categoryRepository.findByName(name);
+    public List<Category> getCategoriesByDescription(String description) {
+        List<Category> categories = categoryRepository.findByDescription(description);
         if (categories.isEmpty()) throw new NameNotFoundException();
         return categories;
     }
@@ -43,7 +43,7 @@ public class CategoryService {
         Category categoria = categoryRepository.findById(id)
                     .orElseThrow(IdNotFoundException::new);
 
-        categoria.setCategory(categoriaAtualizada.getCategory());
+        categoria.setDescription(categoriaAtualizada.getDescription());
 
         return categoryRepository.save(categoria);
     }

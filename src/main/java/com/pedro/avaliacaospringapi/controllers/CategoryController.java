@@ -52,9 +52,9 @@ public class CategoryController {
     }
 
     @GetMapping("/")
-    @Operation(summary = "Procurar categorias por nome")
-    public ResponseEntity<?> findByName(@RequestParam String name) {
-        List<Category> categories = categoryService.getCategoriesByName(name);
+    @Operation(summary = "Procurar categorias pela descrição")
+    public ResponseEntity<?> findByDescription(@RequestParam String description) {
+        List<Category> categories = categoryService.getCategoriesByDescription(description);
         return ResponseEntity.ok(categories);
     }
 
