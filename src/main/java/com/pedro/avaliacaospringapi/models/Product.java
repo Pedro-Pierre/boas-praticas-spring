@@ -1,11 +1,17 @@
 package com.pedro.avaliacaospringapi.models;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -32,7 +38,9 @@ public class Product {
     @JoinColumn(name = "categorie_id", nullable = false)
     private Category category;
 
-    public Product() {}
+    @JsonIgnore
+    @ManyToMany(mappedBy = "products")
+    private Set<User> users = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -64,6 +72,14 @@ public class Product {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public Set<User> getUsers() { 
+        return users; 
+    }
+
+    public void setUsers(Set<User> users) { 
+        this.users = users; 
     }
 
 }
