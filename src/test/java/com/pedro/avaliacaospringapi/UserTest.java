@@ -7,6 +7,8 @@ import org.junit.Assert;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pedro.avaliacaospringapi.models.Category;
+import com.pedro.avaliacaospringapi.models.Product;
 import com.pedro.avaliacaospringapi.models.User;
 
 import org.junit.jupiter.api.Test;
@@ -253,6 +255,94 @@ class UserTest {
 
         Assert.assertEquals(404, status);
         Assert.assertTrue(responseBody.contains("Id não encontrado"));
+    }
+
+    @Test
+    void T009_listarProdutosDoUsuario() throws Exception {
+        // Cria categoria
+        Category category = new Category();
+        category.setDescription("Eletrônicos");
+        String categoryJson = mapper.writeValueAsString(category);
+        MvcResult catResult = mockMvc.perform(MockMvcRequestBuilders.post("/categories")
+            .content(categoryJson)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andReturn();
+        JsonNode catNode = getJson(catResult.getResponse().getContentAsString());
+
+        Product product = new Product();
+        product.setDescription("Notebook");
+        product.setPrice(2500.00);
+        product.setCategory(new Category());
+        product.getCategory().setId(catNode.get("id").asLong());
+        String productJson = mapper.writeValueAsString(product);
+        MvcResult prodResult = mockMvc.perform(MockMvcRequestBuilders.post("/products")
+            .content(productJson)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andReturn();
+        JsonNode prodNode = getJson(prodResult.getResponse().getContentAsString());
+
+        User user = new User();
+        user.setName("Usuário Produto");
+        user.setEmail("produto@email.com");
+        String userJson = mapper.writeValueAsString(user);
+        MvcResult userResult = mockMvc.perform(MockMvcRequestBuilders.post("/users")
+            .content(userJson)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andReturn();
+        JsonNode userNode = getJson(userResult.getResponse().getContentAsString());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/users/" + userNode.get("id").asLong() + "/products/" + prodNode.get("id").asLong()))
+            .andReturn();
+
+        MvcResult produtosResult = mockMvc.perform(MockMvcRequestBuilders.get("/users/" + userNode.get("id").asLong() + "/products"))
+            .andReturn();
+
+        JsonNode produtosJson = getJson(produtosResult.getResponse().getContentAsString());
+        Assert.assertEquals(1, produtosJson.size());
+        Assert.assertEquals("Notebook", produtosJson.get(0).get("description").asText());
+    }
+
+    @Test
+    void T010_removerProdutoDoUsuario() throws Exception {
+        Category category = new Category();
+        category.setDescription("Eletrônicos");
+        String categoryJson = mapper.writeValueAsString(category);
+        MvcResult catResult = mockMvc.perform(MockMvcRequestBuilders.post("/categories")
+            .content(categoryJson)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andReturn();
+        JsonNode catNode = getJson(catResult.getResponse().getContentAsString());
+
+        Product product = new Product();
+        product.setDescription("Notebook");
+        product.setPrice(2500.00);
+        product.setCategory(new Category());
+        product.getCategory().setId(catNode.get("id").asLong());
+        String productJson = mapper.writeValueAsString(product);
+        MvcResult prodResult = mockMvc.perform(MockMvcRequestBuilders.post("/products")
+            .content(productJson)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andReturn();
+        JsonNode prodNode = getJson(prodResult.getResponse().getContentAsString());
+
+        User user = new User();
+        user.setName("Usuário Produto");
+        user.setEmail("produto@email.com");
+        String userJson = mapper.writeValueAsString(user);
+        MvcResult userResult = mockMvc.perform(MockMvcRequestBuilders.post("/users")
+            .content(userJson)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andReturn();
+        JsonNode userNode = getJson(userResult.getResponse().getContentAsString());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/users/" + userNode.get("id").asLong() + "/products/" + prodNode.get("id").asLong()))
+            .andReturn();
+
+        MvcResult afterDeleteResult = mockMvc.perform(MockMvcRequestBuilders.get("/users/" + userNode.get("id").asLong() + "/products"))
+            .andReturn();
+
+        JsonNode finalList = getJson(afterDeleteResult.getResponse().getContentAsString());
+        Assert.assertEquals(0, finalList.size());
     }
 
     private JsonNode getJson(String jsonString) throws JsonProcessingException {

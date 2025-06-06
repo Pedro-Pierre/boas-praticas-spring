@@ -75,13 +75,6 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void atualizarProdutosDoUsuario(Long userId, List<Long> idsProdutos) {
-        User user = buscarUsuario(userId);
-        List<Product> produtos = productRepository.findAllById(idsProdutos);
-        user.setProducts(new HashSet<>(produtos));
-        userRepository.save(user);
-    }
-
     private User buscarUsuario(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(IdNotFoundException::new);
